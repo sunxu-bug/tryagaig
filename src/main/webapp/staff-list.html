@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="utf-8">
+		<title>商品列表页面</title>
+		<link href="plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+		<style>
+		</style>
+	</head>
+	<body>
+	<div class="my-body">
+		<!-- Modal -->
+		<div class="modal fade" id="editMo" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" aria-label="Close" @click="hideMo()">
+							<span aria-hidden="true">&times;</span>
+						</button>
+						<h4 class="modal-title" id="myModalLabel">编辑用户</h4>
+					</div>
+					<div class="modal-body">
+						<div class="form-group">
+							<label for="edRole">角色</label>
+							<input type="text" class="form-control" id="edRole" placeholder="角色" v-model="ed.role">
+						</div>
+						<div class="form-group">
+							<label for="edUsername">昵称</label>
+							<input type="text" class="form-control" id="edUsername" placeholder="昵称" v-model="ed.username">
+						</div>
+						<div class="form-group">
+							<label for="edAccount">用户名</label>
+							<input type="text" class="form-control" id="edAccount" placeholder="用户名" v-model="ed.account">
+						</div>
+						<div class="form-group">
+							<label for="edPasswd">密码</label>
+							<input type="password" class="form-control" id="edPasswd" placeholder="密码" v-model="ed.passwd">
+						</div>
+						<div class="form-group">
+							<label for="edStatus">状态</label>
+							<input type="text" class="form-control" id="edStatus" placeholder="状态" v-model="ed.status">
+						</div>
+						<div class="form-group">
+							<label for="edOtherthing">其他</label>
+							<input type="text" class="form-control" id="edOtherthing" placeholder="其他" v-model="ed.otherthing">
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" @click="hideMo()">取消</button>
+						<button type="button" class="btn btn-primary" @click="save()">保存</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="panel panel-default">
+			<div class="panel-heading">账户列表页数据</div>
+			<div class="panel-body">
+				<form class="form-inline">
+					<button type="button" class="btn btn-success" @click="openMo()">新增</button>
+					<div class="form-group">
+						<div class="input-group">
+							<div class="input-group-addon">用户名</div>
+							<input type="text" class="form-control" placeholder="请输入用户名" v-model="sd.account">
+						</div>
+					</div>
+					<button type="button" class="btn btn-primary" @click="getList(1)">搜索</button>
+				</form>
+			</div>
+		</div>
+
+		<table class="table table-bordered table-hover table-condensed">
+			<tr class="active">
+				<td>ID</td>
+				<td>角色</td>
+				<td>昵称</td>
+				<td>账号</td>
+				<td>密码</td>
+				<td>状态</td>
+				<td>其他</td>
+				<td>操作</td>
+			</tr>
+			<tr v-for="data in dataList">
+				<td>{{data.id}}</td>
+				<td>{{data.role}}</td>
+				<td>{{data.username}}</td>
+				<td>{{data.account}}</td>
+				<td>{{data.passwd}}</td>
+				<td>{{data.status}}</td>
+				<td>{{data.otherthing}}</td>
+				<td>
+					<button type="button" class="btn btn-link btn-xs" @click="edit(data)">编辑</button>
+					<button type="button" class="btn btn-link btn-xs" @click="del(data.id)">删除</button>
+				</td>
+			</tr>
+		</table>
+		<div class="my-nav">
+			<nav aria-label="Page navigation">
+				<ul class="pagination">
+					<li>
+						<a aria-label="Previous" @click="upPage()">
+							<span aria-hidden="true">&laquo;</span>
+						</a>
+					</li>
+					<li v-for="pi in page.pager">
+						<a @click="getList(pi)">{{pi}}</a>
+					</li>
+					<li>
+						<a aria-label="Next" @click="downPage()">
+							<span aria-hidden="true">&raquo;</span>
+						</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</div>
+		<script src="plugins/jq/jquery.min.js"></script>
+		<script src="plugins/bootstrap/js/bootstrap.min.js"></script>
+		<script src="plugins/vue/vue.js"></script>
+	<script>
+		var app = new Vue({
+			el: '.my-body',
+			data: {
+				dataList:[],
+				//搜索数据
+				sd:{
+					account:''
+				},
+				//分页数据
+				page : {
+					index : 1,
+					max: 1,
+					pager: []
+				},
+				// 编辑数据
+				ed : {
+					id: 0,
+					role:'',
+					username:'',
+					account: '',
+					passwd: '',
+					status:'',
+					otherthing:'',
+				}
+			},
+			methods: {
+				// 上一页
+				upPage: function () {
+					if (this.page.index > 1) {
+						this.page.index = this.page.index - 1;
+						this.getList(this.page.index);
+					}
+				},
+				// 下一页
+				downPage: function () {
+					if (this.page.index < this.page.max) {
+						this.page.index = this.page.index + 1;
+						this.getList(this.page.index);
+					}
+				},
+				// 计算分页
+				runPage: function (max) {
+					this.page.max = max;
+					this.page.pager = [];
+					for (var i = 1; i <= max; i++) {
+						this.page.pager.push(i);
+					}
+				},
+				//获取列表数据
+				getList: function (pageIndex) {
+					this.page.index = pageIndex;
+					$.ajax({
+						url: "/stafftable.ajax",
+						type: "POST",
+						data: {
+							index:pageIndex,
+							account:app.sd.account
+						},
+						dataType: "JSON",
+						success: function (resp) {
+							app.dataList=resp.list;
+							app.runPage(resp.max);
+							//"="左边是前端数据，"="右边是后端数据
+						},
+						error: function () {
+							alert("err");
+						}
+					});
+				},
+				// 打开
+				openMo: function () {
+					$('#editMo').modal({
+						backdrop: 'static',
+						keyboard: false,
+					});
+				},
+				// 关闭
+				hideMo: function () {
+					//这里需要默认初始化值为空才能不残留初始化数据
+					this.ed.id = 0;
+					this.ed.role='';
+					this.ed.username='';
+					this.ed.account = '';
+					this.ed.passwd = '';
+					this.ed.status='';
+					this.ed.otherthing='';
+					$('#editMo').modal('hide');
+				},
+				// 编辑(把初始化数据放到模态框中进行展示，并调用打开模态框的方法)
+				edit: function(data) {
+					this.ed.id = data.id;
+					this.ed.role=data.role;
+					this.ed.username=data.username;
+					this.ed.account = data.account;
+					this.ed.passwd = data.passwd;
+					this.ed.status=data.status;
+					this.ed.otherthing=data.otherthing;
+					this.openMo();
+				},
+				// 保存数据
+				save: function () {
+					$.ajax({
+						url: "/staff-save.ajax",
+						type: "POST",
+						data: {
+							id: app.ed.id,
+							role:app.ed.role,
+							username:app.ed.username,
+							account: app.ed.account,
+							passwd: app.ed.passwd,
+							status:app.ed.status
+						},
+						dataType: "JSON",
+						success: function (resp) {
+							console.log(resp);
+							// 成功的时候
+							// app.hideMo();
+							// app.getList(app.page.index);
+						},
+						error: function () {
+							alert("err");
+						}
+					});
+				},
+				// 删除数据
+				del: function (delId) {
+					var type = confirm("确定要删除该数据吗？");
+					if (type) {
+						$.ajax({
+							url: "/account-del.ajax",
+							type: "POST",
+							data: {
+								id: delId,
+							},
+							dataType: "JSON",
+							success: function (resp) {
+								console.log(resp);
+								// 成功的时候
+								// app.getList(app.page.index);
+							},
+							error: function () {
+								alert("err");
+							}
+						});
+					}
+				}
+			}
+		});
+		app.getList(app.page.index);
+		// UPDATE emp SET account=?, passwd=? WHERE id=?
+		// INSTER INTO emp (account, passwd) values (?, ?)
+	</script>
+	</body>
+</html>

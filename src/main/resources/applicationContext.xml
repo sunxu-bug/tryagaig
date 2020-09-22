@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+">
+
+    <bean name="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations" value="classpath:mydata.properties"></property>
+        <property name="fileEncoding" value="UTF-8"></property>
+    </bean>
+
+<!--    因为bean放到了同一个池子中了，所以需要起个名字，通过全路径找到他是谁！-->
+<!--    <bean name="staffTableService" class="org.sunxu.service.impl.StaffTableServiceImpl">-->
+<!--        <property name="pageSize" value="${pageSize}"></property>-->
+<!--    </bean>-->
+
+<!--    依赖注入的前提是要先对属性生成set和get方法才行-->
+    <!--    扫描某个包，要与注释一起使用，当扫到注释的那个累就会交给spring管理-->
+    <context:component-scan base-package="org.sunxu.service.impl,org.sunxu.aop"></context:component-scan>
+
+    <aop:config>
+        <aop:aspect ref="aopDemp">
+            <aop:before method="qianzhifangfa" pointcut="execution(* *.*(..))"></aop:before>
+            <aop:after method="houzhifangfa" pointcut="execution(* *.*(..))"></aop:after>
+        </aop:aspect>
+    </aop:config>
+
+    <!--    execution()-->
+    <!--    任意的A方法调用任意的B方法-->
+    <!--    *      *                 .*   (..                       )-->
+    <!--    doPost AccountServiceImpl.list(int index, String account)-->
+</beans>

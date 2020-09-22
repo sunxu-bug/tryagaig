@@ -1,0 +1,20 @@
+.username{
+    width: 60%;
+    height: 500px;
+    padding-top: 340px;
+    padding-left: 800px;
+}
+.namecenter  {
+    text-align: center;
+}
+.err {
+    color: red;
+}
+.myimg > img{
+    padding: 0px;
+    margin: 0px;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    z-index: -1;
+}
